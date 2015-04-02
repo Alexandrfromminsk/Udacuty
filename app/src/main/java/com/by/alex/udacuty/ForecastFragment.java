@@ -194,6 +194,7 @@ public class ForecastFragment extends Fragment {
         }
 
 
+
         @Override
         protected String[] doInBackground(String... params) {
 
@@ -289,6 +290,18 @@ public class ForecastFragment extends Fragment {
 
                 return null;
             }
+
+
+        }
+
+
+        @Override
+        protected void onPostExecute(String[] result) {
+
+            if (result!=null){
+
+            }
+
 
         }
     }
