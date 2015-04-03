@@ -12,8 +12,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,14 +30,13 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class ForecastFragment extends Fragment {
     /**
      * A placeholder fragment containing a simple view.
      */
 
-    private ArrayAdapter<String> adapter;
+    public ArrayAdapter<String> mForecastAdapter;
     ListView forecasrListView;
 
     public ForecastFragment() {
@@ -68,7 +69,7 @@ public class ForecastFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        String[] forecastArray = {
+        final String[] forecastArray = {
                 "Today - Sunny = 88/63",
                 "Tomorrow - Foggy - 70/40",
                 "Weds - Cloudy - 72/63",
@@ -78,16 +79,24 @@ public class ForecastFragment extends Fragment {
                 "Sun - Sunny - 80/68"
         };
 
-        List<String> weekForecast = new ArrayList<String>(
-                Arrays.asList(forecastArray));
 
-        adapter = new ArrayAdapter<String>(
+        mForecastAdapter = new ArrayAdapter<String>(
                 getActivity(), R.layout.list_item_forecast,
-                R.id.list_item_forecast_textview, forecastArray);
+                R.id.list_item_forecast_textview, new ArrayList(Arrays.asList(forecastArray)));
+
 
         forecasrListView = (ListView) rootView.findViewById(R.id.listview_forecast);
 
-        forecasrListView.setAdapter(adapter);
+        forecasrListView.setAdapter(mForecastAdapter);
+
+        forecasrListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                String forecastStr = mForecastAdapter.getItem(position);
+
+                Toast.makeText(getActivity(), forecastStr, Toast.LENGTH_LONG).show();
+            }
+        });
 
 
         return rootView;
@@ -198,7 +207,7 @@ public class ForecastFragment extends Fragment {
         @Override
         protected String[] doInBackground(String... params) {
 
-            if (params.length==0)
+            if (params.length == 0)
                 return null;
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
@@ -230,10 +239,9 @@ public class ForecastFragment extends Fragment {
                         .build();
 
 
-
                 URL url = new URL(buildedUri.toString());
 
-                Log.v(LOG_TAG, "SUper URL:" + buildedUri.toString());
+                //Log.v(LOG_TAG, "SUper URL:" + buildedUri.toString());
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -263,7 +271,7 @@ public class ForecastFragment extends Fragment {
                 }
                 forecastJsonStr = buffer.toString();
 
-                Log.v(LOG_TAG, "Forecast JSON"  + forecastJsonStr);
+                Log.v(LOG_TAG, "Forecast JSON" + forecastJsonStr);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
@@ -299,6 +307,10 @@ public class ForecastFragment extends Fragment {
         protected void onPostExecute(String[] result) {
 
             if (result!=null){
+                mForecastAdapter.clear();
+                for (String  dayForecastStr:result){
+                    mForecastAdapter.add(dayForecastStr);
+                }
 
             }
 
